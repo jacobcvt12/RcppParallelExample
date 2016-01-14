@@ -8,4 +8,4 @@ Maintainer: Jacob Carey <jacobcvt12@gmail.com>
 Description: Example of R package using Rcpp and OpenMPI
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.3)
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
