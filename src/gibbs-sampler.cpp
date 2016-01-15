@@ -148,47 +148,52 @@ Rcpp::List mixture_model(arma::vec y, int k=3,
     return Rcpp::List::create(Rcpp::Named("y")=y);
 }
 
-// gibbs sampler for bivariate distribution
-// f(x, y)=kx^2 exp(-xy^2-y^2+2y-4x), x>0 y \in (-\infty, \infty)
+// gibbs sampler for normal distribution
 // [[Rcpp::export]]
-Rcpp::List bivariate(arma::vec data, int burnin=1000, int iter=1000, int chains=1) {
+Rcpp::List normal_gibbs(arma::vec data, double mu0, double t20, double nu0, double s20, 
+                        int burnin=1000, int iter=1000, int chains=1) {
     // initialize parameters
-    arma::vec x = arma::randg(1, arma::distr_param(0.001, 0.001));
-    arma::vec y = rnormArma(1, 0, 1000);
+    double data_mean = arma::mean(data);
+    double data_var = arma::var(data);
+    int n = data.size();
+    double mu = data_mean;
+    double s2 = data_var;
 
     // initialize chains
-    arma::vec x_chain(iter);
-    arma::vec y_chain(iter);
+    arma::vec mu_chain(iter);
+    arma::vec s2_chain(iter);
 
     // burnin
-    for (int B = 0; B < burnin; ++B) {
-        // solve for full conditional parameters
-        double shape = 3;
-        double scale = arma::conv_to<double>::from(1. / (y * y + 4));
+    for (int b = 0; b < burnin; ++b) {
+        // update mu
+        double mu_n = (mu0 / t20 + n * data_mean * (1. / s2)) / (1. / t20 + n * (1 / s2));
+        double t2_n = 1 / (1 / t20 + n / (s2));
+        mu = arma::conv_to<double>::from(rnormArma(1, mu_n, t2_n));
 
-        double mean = arma::conv_to<double>::from(1. / (x + 1));
-        double variance = arma::conv_to<double>::from(1. / (2 * x + 2));
-
-        x = arma::randg(1, arma::distr_param(shape, scale));
-        y = rnormArma(1, mean, variance);
+        // update s2
+        double nu_n = nu0 + n;
+        double s2_n = (nu0 * s20 + (n-1) * data_var + n * pow(data_mean - mu, 2)) / nu_n;
+        s2 = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
     }
 
-    // sample from posterior
+    // burnin
     for (int s = 0; s < iter; ++s) {
-        // solve for full conditional parameters
-        double shape = 3;
-        double scale = arma::conv_to<double>::from(1. / (y * y + 4));
+        // update mu
+        double mu_n = (mu0 / t20 + n * data_mean * (1. / s2)) / (1. / t20 + n * (1 / s2));
+        double t2_n = 1 / (1 / t20 + n / (s2));
+        mu = arma::conv_to<double>::from(rnormArma(1, mu_n, t2_n));
 
-        double mean = arma::conv_to<double>::from(1. / (x + 1));
-        double variance = arma::conv_to<double>::from(1. / (2 * x + 2));
+        // update s2
+        double nu_n = nu0 + n;
+        double s2_n = (nu0 * s20 + (n-1) * data_var + n * pow(data_mean - mu, 2)) / nu_n;
+        s2 = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
 
-        x = arma::randg(1, arma::distr_param(shape, scale));
-        y = rnormArma(1, mean, variance);
-
-        x_chain[s] = arma::conv_to<double>::from(x);
-        y_chain[s] = arma::conv_to<double>::from(y);
+        // store values
+        mu_chain[s] = mu;
+        s2_chain[s] = s2;
     }
 
-    return Rcpp::List::create(Rcpp::Named("x")=x_chain,
-                              Rcpp::Named("y")=y_chain);
+
+    return Rcpp::List::create(Rcpp::Named("mu")=mu_chain,
+                              Rcpp::Named("s2")=s2_chain);
 }
