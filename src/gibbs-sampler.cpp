@@ -147,3 +147,48 @@ Rcpp::List mixture_model(arma::vec y, int k=3,
 
     return Rcpp::List::create(Rcpp::Named("y")=y);
 }
+
+// gibbs sampler for bivariate distribution
+// f(x, y)=kx^2 exp(-xy^2-y^2+2y-4x), x>0 y \in (-\infty, \infty)
+// [[Rcpp::export]]
+Rcpp::List bivariate(arma::vec data, int burnin=1000, int iter=1000, int chains=1) {
+    // initialize parameters
+    arma::vec x = arma::randg(1, arma::distr_param(0.001, 0.001));
+    arma::vec y = rnormArma(1, 0, 1000);
+
+    // initialize chains
+    arma::vec x_chain(iter);
+    arma::vec y_chain(iter);
+
+    // burnin
+    for (int B = 0; B < burnin; ++B) {
+        // solve for full conditional parameters
+        double shape = 3;
+        double scale = arma::conv_to<double>::from(1. / (y * y + 4));
+
+        double mean = arma::conv_to<double>::from(1. / (x + 1));
+        double variance = arma::conv_to<double>::from(1. / (2 * x + 2));
+
+        x = arma::randg(1, arma::distr_param(shape, scale));
+        y = rnormArma(1, mean, variance);
+    }
+
+    // sample from posterior
+    for (int s = 0; s < iter; ++s) {
+        // solve for full conditional parameters
+        double shape = 3;
+        double scale = arma::conv_to<double>::from(1. / (y * y + 4));
+
+        double mean = arma::conv_to<double>::from(1. / (x + 1));
+        double variance = arma::conv_to<double>::from(1. / (2 * x + 2));
+
+        x = arma::randg(1, arma::distr_param(shape, scale));
+        y = rnormArma(1, mean, variance);
+
+        x_chain[s] = arma::conv_to<double>::from(x);
+        y_chain[s] = arma::conv_to<double>::from(y);
+    }
+
+    return Rcpp::List::create(Rcpp::Named("x")=x_chain,
+                              Rcpp::Named("y")=y_chain);
+}
