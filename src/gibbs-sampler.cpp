@@ -186,7 +186,7 @@ Rcpp::List normal_gibbs(arma::vec data, double mu0, double t20, double nu0, doub
         // update s2
         double nu_n = nu0 + n;
         double s2_n = (nu0 * s20 + (n-1) * data_var + n * pow(data_mean - mu, 2)) / nu_n;
-        s2 = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
+        s2 = 1. / arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
 
         // store values
         mu_chain[s] = mu;
