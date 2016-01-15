@@ -33,6 +33,24 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// normal_gibbs
+Rcpp::List normal_gibbs(arma::vec data, double mu0, double t20, double nu0, double s20, int burnin, int iter, int chains);
+RcppExport SEXP RcppParallel_normal_gibbs(SEXP dataSEXP, SEXP mu0SEXP, SEXP t20SEXP, SEXP nu0SEXP, SEXP s20SEXP, SEXP burninSEXP, SEXP iterSEXP, SEXP chainsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< double >::type mu0(mu0SEXP);
+    Rcpp::traits::input_parameter< double >::type t20(t20SEXP);
+    Rcpp::traits::input_parameter< double >::type nu0(nu0SEXP);
+    Rcpp::traits::input_parameter< double >::type s20(s20SEXP);
+    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< int >::type chains(chainsSEXP);
+    __result = Rcpp::wrap(normal_gibbs(data, mu0, t20, nu0, s20, burnin, iter, chains));
+    return __result;
+END_RCPP
+}
 // rcpp_hello_world
 List rcpp_hello_world();
 RcppExport SEXP RcppParallel_rcpp_hello_world() {

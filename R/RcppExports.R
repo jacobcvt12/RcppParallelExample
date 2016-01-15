@@ -9,6 +9,10 @@ mixture_model <- function(y, k = 3L, burnin = 1000L, iter = 1000L, chains = 1L) 
     .Call('RcppParallel_mixture_model', PACKAGE = 'RcppParallel', y, k, burnin, iter, chains)
 }
 
+normal_gibbs <- function(data, mu0, t20, nu0, s20, burnin = 1000L, iter = 1000L, chains = 1L) {
+    .Call('RcppParallel_normal_gibbs', PACKAGE = 'RcppParallel', data, mu0, t20, nu0, s20, burnin, iter, chains)
+}
+
 rcpp_hello_world <- function() {
     .Call('RcppParallel_rcpp_hello_world', PACKAGE = 'RcppParallel')
 }
