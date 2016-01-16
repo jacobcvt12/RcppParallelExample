@@ -1,6 +1,9 @@
-// [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
 #include <cmath>
+#include <omp.h>
+
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::plugins(openmp)]]
 
 arma::vec rnormArma(int n, double mean=0.0, double variance=1.0) {
     arma::vec draws = arma::randn(n, 1);
@@ -26,37 +29,40 @@ Rcpp::List normal_gibbs(arma::vec data, double mu0, double t20, double nu0, doub
     double s2 = data_var;
 
     // initialize chains
-    arma::vec mu_chain(iter);
-    arma::vec s2_chain(iter);
+    arma::mat mu_chain(iter, chains);
+    arma::mat s2_chain(iter, chains);
 
-    // burnin
-    for (int b = 0; b < burnin; ++b) {
-        // update mu
-        double mu_n = (mu0 / t20 + n * data_mean * (1. / s2)) / (1. / t20 + n * (1 / s2));
-        double t2_n = 1 / (1 / t20 + n / (s2));
-        mu = arma::conv_to<double>::from(rnormArma(1, mu_n, t2_n));
+    #pragma omp parallel for num_threads(chains)
+    for (int chain = 0; chain < chains; ++chain) {
+        // burnin
+        for (int b = 0; b < burnin; ++b) {
+            // update mu
+            double mu_n = (mu0 / t20 + n * data_mean * (1. / s2)) / (1. / t20 + n * (1 / s2));
+            double t2_n = 1 / (1 / t20 + n / (s2));
+            mu = arma::conv_to<double>::from(rnormArma(1, mu_n, t2_n));
 
-        // update s2
-        double nu_n = nu0 + n;
-        double s2_n = (nu0 * s20 + (n-1) * data_var + n * pow(data_mean - mu, 2)) / nu_n;
-        s2 = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
-    }
+            // update s2
+            double nu_n = nu0 + n;
+            double s2_n = (nu0 * s20 + (n-1) * data_var + n * pow(data_mean - mu, 2)) / nu_n;
+            s2 = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
+        }
 
-    // burnin
-    for (int s = 0; s < iter; ++s) {
-        // update mu
-        double mu_n = (mu0 / t20 + n * data_mean * (1. / s2)) / (1. / t20 + n * (1 / s2));
-        double t2_n = 1 / (1 / t20 + n / (s2));
-        mu = arma::conv_to<double>::from(rnormArma(1, mu_n, t2_n));
+        // burnin
+        for (int s = 0; s < iter; ++s) {
+            // update mu
+            double mu_n = (mu0 / t20 + n * data_mean * (1. / s2)) / (1. / t20 + n * (1 / s2));
+            double t2_n = 1 / (1 / t20 + n / (s2));
+            mu = arma::conv_to<double>::from(rnormArma(1, mu_n, t2_n));
 
-        // update s2
-        double nu_n = nu0 + n;
-        double s2_n = (nu0 * s20 + (n-1) * data_var + n * pow(data_mean - mu, 2)) / nu_n;
-        s2 = 1. / arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
+            // update s2
+            double nu_n = nu0 + n;
+            double s2_n = (nu0 * s20 + (n-1) * data_var + n * pow(data_mean - mu, 2)) / nu_n;
+            s2 = 1. / arma::conv_to<double>::from(arma::randg(1, arma::distr_param(nu_n / 2., 2. / (nu_n *s2_n))));
 
-        // store values
-        mu_chain[s] = mu;
-        s2_chain[s] = s2;
+            // store values
+            mu_chain(s, chain) = mu;
+            s2_chain(s, chain) = s2;
+        }
     }
 
 
