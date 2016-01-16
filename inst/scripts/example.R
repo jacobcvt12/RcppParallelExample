@@ -1,4 +1,4 @@
-library(RcppParallel)
+library(RcppParallelExample)
 
 # generate data
 mu.true <- 20

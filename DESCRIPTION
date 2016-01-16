@@ -1,4 +1,4 @@
-Package: RcppParallel
+Package: RcppParallelExample
 Type: Package
 Title: Example of R package using Rcpp and OpenMPI
 Version: 1.0
