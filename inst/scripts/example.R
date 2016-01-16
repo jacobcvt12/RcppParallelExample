@@ -3,9 +3,7 @@ library(RcppParallel)
 # generate data
 mu.true <- 20
 s2.true <- 9
-data <- rnorm(1000, mu.true, sqrt(s2.true))
+data <- rnorm(100000, mu.true, sqrt(s2.true))
 
 # run gibbs sampler
-mcmc <- normal_gibbs(data, 0, 100, 1, 1)
-mu <- mcmc$mu
-s2 <- mcmc$s2
+mcmc <- normal.gibbs(data, chains=3)
