@@ -6,33 +6,6 @@
 
 using namespace Rcpp;
 
-// sampleArma
-std::vector<int> sampleArma(int n, int k);
-RcppExport SEXP RcppParallel_sampleArma(SEXP nSEXP, SEXP kSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    __result = Rcpp::wrap(sampleArma(n, k));
-    return __result;
-END_RCPP
-}
-// mixture_model
-Rcpp::List mixture_model(arma::vec y, int k, int burnin, int iter, int chains);
-RcppExport SEXP RcppParallel_mixture_model(SEXP ySEXP, SEXP kSEXP, SEXP burninSEXP, SEXP iterSEXP, SEXP chainsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
-    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
-    Rcpp::traits::input_parameter< int >::type chains(chainsSEXP);
-    __result = Rcpp::wrap(mixture_model(y, k, burnin, iter, chains));
-    return __result;
-END_RCPP
-}
 // normal_gibbs
 Rcpp::List normal_gibbs(arma::vec data, double mu0, double t20, double nu0, double s20, int burnin, int iter, int chains);
 RcppExport SEXP RcppParallel_normal_gibbs(SEXP dataSEXP, SEXP mu0SEXP, SEXP t20SEXP, SEXP nu0SEXP, SEXP s20SEXP, SEXP burninSEXP, SEXP iterSEXP, SEXP chainsSEXP) {
@@ -48,16 +21,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
     Rcpp::traits::input_parameter< int >::type chains(chainsSEXP);
     __result = Rcpp::wrap(normal_gibbs(data, mu0, t20, nu0, s20, burnin, iter, chains));
-    return __result;
-END_RCPP
-}
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP RcppParallel_rcpp_hello_world() {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    __result = Rcpp::wrap(rcpp_hello_world());
     return __result;
 END_RCPP
 }
